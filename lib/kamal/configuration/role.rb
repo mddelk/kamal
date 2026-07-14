@@ -1,7 +1,7 @@
 class Kamal::Configuration::Role
   include Kamal::Configuration::Validation
 
-  delegate :argumentize, :optionize, to: Kamal::Utils
+  delegate :argumentize, :optionize, :with_secret_override, to: Kamal::Utils
 
   attr_reader :name, :config, :secrets, :specialized_env, :specialized_logging, :specialized_proxy
 
@@ -206,7 +206,7 @@ class Kamal::Configuration::Role
       else
         servers = config.raw_config.servers[name]
         servers.is_a?(Array) ? servers : Array(servers["hosts"])
-      end.map { |host| with_secret_override { host } }
+      end.map { |host| with_secret_override(secrets) { host } }
     end
 
     def default_labels
@@ -242,15 +242,5 @@ class Kamal::Configuration::Role
 
       parts = raw_path.split(":", 2)
       [ parts[0], parts[1] ]
-    end
-
-    def with_secret_override(&block)
-      value = block.call
-
-      if secrets.key?(value)
-        secrets[value]
-      else
-        value
-      end
     end
 end

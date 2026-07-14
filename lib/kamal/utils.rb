@@ -107,4 +107,12 @@ module Kamal::Utils
   def older_version?(version, other_version)
     Gem::Version.new(version.delete_prefix("v")) < Gem::Version.new(other_version.delete_prefix("v"))
   end
+
+  def with_secret_override(secrets, &block)
+    value = block.call
+
+    return secrets[value] if secrets.key?(value)
+
+    value
+  end
 end

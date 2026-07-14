@@ -65,7 +65,7 @@ class ConfigurationSshTest < ActiveSupport::TestCase
     end
   end
 
-   test "ssh proxy with proxy_command secret string" do
+  test "ssh proxy with proxy_command secret string" do
     with_test_secrets("secrets" => "KAMAL_PROXY_COMMAND=ssh -W %h:%p user@proxy") do
       config = Kamal::Configuration.new(@deploy.tap { |c| c.merge!(ssh: { "proxy_command" => "KAMAL_PROXY_COMMAND" }) })
       assert_kind_of Net::SSH::Proxy::Command, config.ssh.options[:proxy]
