@@ -12,17 +12,17 @@ class Kamal::Configuration::Ssh
   end
 
   def user
-    ssh_config.fetch("user", "root")
+    with_secret_override { ssh_config.fetch("user", "root") }
   end
 
   def port
-    ssh_config.fetch("port", 22)
+    with_secret_override { ssh_config.fetch("port", 22) }
   end
 
   def proxy
-    if (proxy = ssh_config["proxy"])
+    if (proxy = with_secret_override { ssh_config["proxy"] })
       Net::SSH::Proxy::Jump.new(proxy.include?("@") ? proxy : "root@#{proxy}")
-    elsif (proxy_command = ssh_config["proxy_command"])
+    elsif (proxy_command = with_secret_override { ssh_config["proxy_command"] })
       Net::SSH::Proxy::Command.new(proxy_command)
     end
   end
@@ -72,5 +72,15 @@ class Kamal::Configuration::Ssh
 
     def log_level
       ssh_config.fetch("log_level", :fatal)
+    end
+
+    def with_secret_override(&block)
+      value = block.call
+
+      if secrets.key?(value)
+        secrets[value]
+      else
+        value
+      end
     end
 end

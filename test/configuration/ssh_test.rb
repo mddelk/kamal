@@ -53,9 +53,24 @@ class ConfigurationSshTest < ActiveSupport::TestCase
     assert_equal "root@1.2.3.4", config.ssh.options[:proxy].jump_proxies
   end
 
-  test "ssh options with proxy host and user" do
+   test "ssh options with proxy host and user" do
     config = Kamal::Configuration.new(@deploy.tap { |c| c.merge!(ssh: { "proxy" => "app@1.2.3.4" }) })
     assert_equal "app@1.2.3.4", config.ssh.options[:proxy].jump_proxies
+  end
+
+  test "ssh proxy host with secret string" do
+    with_test_secrets("secrets" => "KAMAL_PROXY=1.2.3.4") do
+      config = Kamal::Configuration.new(@deploy.tap { |c| c.merge!(ssh: { "proxy" => "KAMAL_PROXY" }) })
+      assert_equal "root@1.2.3.4", config.ssh.options[:proxy].jump_proxies
+    end
+  end
+
+   test "ssh proxy with proxy_command secret string" do
+    with_test_secrets("secrets" => "KAMAL_PROXY_COMMAND=ssh -W %h:%p user@proxy") do
+      config = Kamal::Configuration.new(@deploy.tap { |c| c.merge!(ssh: { "proxy_command" => "KAMAL_PROXY_COMMAND" }) })
+      assert_kind_of Net::SSH::Proxy::Command, config.ssh.options[:proxy]
+      assert_equal "ssh -W %h:%p user@proxy", config.ssh.options[:proxy].inspect
+    end
   end
 
   test "ssh key_data with plain value array" do
@@ -75,6 +90,20 @@ class ConfigurationSshTest < ActiveSupport::TestCase
     with_test_secrets("secrets" => "SSH_PRIVATE_KEY=secret_ssh_key\nSECOND_KEY=second_secret_ssh_key") do
       config = Kamal::Configuration.new(@deploy.tap { |c| c.merge!(ssh: { "key_data" => [ "SSH_PRIVATE_KEY", "SECOND_KEY" ] }) })
       assert_equal [ "secret_ssh_key", "second_secret_ssh_key" ], config.ssh.options[:key_data]
+    end
+  end
+
+  test "ssh user with secret string" do
+    with_test_secrets("secrets" => "KAMAL_SSH_USER=secret_user") do
+      config = Kamal::Configuration.new(@deploy.tap { |c| c.merge!(ssh: { "user" => "KAMAL_SSH_USER" }) })
+      assert_equal "secret_user", config.ssh.options[:user]
+    end
+  end
+
+  test "ssh port with secret string" do
+    with_test_secrets("secrets" => "KAMAL_SSH_PORT=2222") do
+      config = Kamal::Configuration.new(@deploy.tap { |c| c.merge!(ssh: { "port" => "KAMAL_SSH_PORT" }) })
+      assert_equal "2222", config.ssh.options[:port]
     end
   end
 end
