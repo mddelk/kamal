@@ -23,6 +23,27 @@ class ConfigurationProxyTest < ActiveSupport::TestCase
     assert_equal true, config.proxy.ssl?
   end
 
+  test "ssl with secret host" do
+    with_test_secrets("secrets" => "KAMAL_PROXY=example.com") do
+      @deploy[:proxy] = { "ssl" => true, "host" => "KAMAL_PROXY" }
+      assert_equal true, config.proxy.ssl?
+    end
+  end
+
+  test "ssl with multiple hosts passed via secret host" do
+    with_test_secrets("secrets" => "KAMAL_PROXY=example.com,anotherexample.com") do
+      @deploy[:proxy] = { "ssl" => true, "host" => "KAMAL_PROXY" }
+      assert_equal true, config.proxy.ssl?
+    end
+  end
+
+  test "ssl with multiple hosts passed via secret hosts" do
+    with_test_secrets("secrets" => "HOST_FOO=example.com\nHOST_BAR=anotherexample.com") do
+      @deploy[:proxy] = { "ssl" => true, "hosts" => [ "HOST_FOO", "HOST_BAR" ] }
+      assert_equal true, config.proxy.ssl?
+    end
+  end
+
   test "ssl with no host" do
     @deploy[:proxy] = { "ssl" => true }
     assert_raises(Kamal::ConfigurationError) { config.proxy.ssl? }

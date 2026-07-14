@@ -26,7 +26,8 @@ class Kamal::Configuration::Proxy
   end
 
   def hosts
-    proxy_config["hosts"] || proxy_config["host"]&.split(",") || []
+    (proxy_config["hosts"] || proxy_config["host"]&.split(",") || [])
+      .map { |host| with_secret_override { host } }
   end
 
   def custom_ssl_certificate?
@@ -124,5 +125,15 @@ class Kamal::Configuration::Proxy
 
     def error_pages
       File.join config.proxy_boot.error_pages_container_directory, config.version if config.error_pages_path
+    end
+
+    def with_secret_override(&block)
+      value = block.call
+
+      if secrets.key?(value)
+        secrets[value]
+      else
+        value
+      end
     end
 end
