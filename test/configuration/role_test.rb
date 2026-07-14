@@ -29,6 +29,15 @@ class ConfigurationRoleTest < ActiveSupport::TestCase
     assert_equal [ "1.1.1.3", "1.1.1.4" ], config_with_roles.role(:workers).hosts
   end
 
+  test "hosts with secrets" do
+    with_test_secrets("secrets" => "HOST_FOO=1.1.1.1\nHOST_BAR=1.1.1.2\nHOST_BAZ=1.1.1.3") do
+      @deploy[:servers] = [ "HOST_FOO", "HOST_BAR" ]
+      @deploy_with_roles[:servers]["workers"]["hosts"] = [ "HOST_BAZ" ]
+      assert_equal [ "1.1.1.1", "1.1.1.2" ], config.role(:web).hosts
+      assert_equal [ "1.1.1.3" ], config_with_roles.role(:workers).hosts
+    end
+  end
+
   test "missing env tag is ignored" do
     @deploy_with_roles[:servers]["workers"]["hosts"] = [ { "1.1.1.3" => [ "job" ] } ]
 
