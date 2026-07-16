@@ -33,6 +33,14 @@ class Kamal::Secrets
     false
   end
 
+  def optional_override(&block)
+    value = block.call
+
+    return self[value] if key?(value)
+
+    value
+  end
+
   private
     def secrets
       @secrets ||= secrets_files.inject({}) do |secrets, secrets_file|

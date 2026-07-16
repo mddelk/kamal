@@ -3,8 +3,6 @@ class Kamal::Configuration::Ssh
 
   include Kamal::Configuration::Validation
 
-  delegate :with_secret_override, to: Kamal::Utils
-
   attr_reader :ssh_config, :secrets
 
   def initialize(config:)
@@ -14,17 +12,17 @@ class Kamal::Configuration::Ssh
   end
 
   def user
-    with_secret_override(secrets) { ssh_config.fetch("user", "root") }
+    secrets.optional_override { ssh_config.fetch("user", "root") }
   end
 
   def port
-    with_secret_override(secrets) { ssh_config.fetch("port", 22) }
+    secrets.optional_override { ssh_config.fetch("port", 22) }
   end
 
   def proxy
-    if (proxy = with_secret_override(secrets) { ssh_config["proxy"] })
+    if (proxy = secrets.optional_override { ssh_config["proxy"] })
       Net::SSH::Proxy::Jump.new(proxy.include?("@") ? proxy : "root@#{proxy}")
-    elsif (proxy_command = with_secret_override(secrets) { ssh_config["proxy_command"] })
+    elsif (proxy_command = secrets.optional_override { ssh_config["proxy_command"] })
       Net::SSH::Proxy::Command.new(proxy_command)
     end
   end

@@ -4,7 +4,7 @@ class Kamal::Configuration::Proxy
   DEFAULT_LOG_REQUEST_HEADERS = [ "Cache-Control", "Last-Modified", "User-Agent" ]
   CONTAINER_NAME = "kamal-proxy"
 
-  delegate :argumentize, :optionize, :with_secret_override, to: Kamal::Utils
+  delegate :argumentize, :optionize, to: Kamal::Utils
 
   attr_reader :config, :proxy_config, :role_name, :run, :secrets
   def initialize(config:, proxy_config:, role_name: nil, secrets:, context: "proxy")
@@ -27,7 +27,7 @@ class Kamal::Configuration::Proxy
 
   def hosts
     (proxy_config["hosts"] || proxy_config["host"]&.split(",") || [])
-      .map { |host| with_secret_override(secrets) { host } }
+      .map { |host| secrets.optional_override { host } }
   end
 
   def custom_ssl_certificate?
