@@ -21,28 +21,28 @@ ssh:
   #
   # Defaults to `root`:
   user: app
-  # Supports values from secrets:
+  # Supports secrets:
   user: SECRET_KAMAL_USER
 
   # The SSH port
   #
   # Defaults to 22:
   port: "2222"
-  # Supports values from secrets:
+  # Supports secrets:
   port: SECRET_KAMAL_PORT
 
   # Proxy host
   #
   # Specified in the form <host> or <user>@<host>:
   proxy: root@proxy-host
-  # Supports values from secrets:
+  # Supports secrets:
   proxy: SECRET_KAMAL_PROXY
 
   # Proxy command
   #
   # A custom proxy command, required for older versions of SSH:
   proxy_command: "ssh -W %h:%p user@proxy"
-  # Supports values from secrets:
+  # Supports secrets:
   proxy_command: SECRET_KAMAL_PROXY_COMMAND
 
   # Log level
